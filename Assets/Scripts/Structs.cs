@@ -17,6 +17,6 @@ namespace Structs
     public struct Results
     {
         public float testTime;
-        public bool isSuccessful;
+        public int successes;
     }
 }

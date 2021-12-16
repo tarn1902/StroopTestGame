@@ -1,71 +1,44 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
 using Structs;
 namespace Game
 {
     //Manages the Stroop test gameplay with a basic reset
     public class GameManager : MonoBehaviour
     {
-        [Header("Object References")]
-        //All lists public to be edited in editor
-        [SerializeField]
-        private TextMeshProUGUI displayText = null;
-        [SerializeField]
-        private GameObject buttonsContainer = null;
-
+        public List<WordColour> WordColour { get { return wordColours; } set { wordColours = value; } }
         [Header("Customise")]
         [SerializeField]
         private List<WordColour> wordColours = null;
-
         public int NumberOfTests { get { return numberOfTests; } set { numberOfTests = Mathf.Clamp(value, 10, 50); } }
         [Header("Option Settings")]
-
         [SerializeField]
         [Range(10, 50)]
         private int numberOfTests = 20;
-        public bool IsRandom { get { return isRandom; } set { isRandom = value; } }
+        public bool IsRandomisedButtons { get { return isRandomisedButtons; } set { isRandomisedButtons = value; } }
         [SerializeField]
-        private bool isRandom = false;
+        private bool isRandomisedButtons = false;
 
-        private List<Button> answerButtons = null;
         private Gui.GuiManager guiManager = null;
         private Results testResults = new Results();
         private int currentTest = 0;
         private float startTime = 0f;
+        private const int numberOfButtons = 4;
 
         //Sets up local data and shows warning if issue
         void Start()
         {
             guiManager = GetComponent<Gui.GuiManager>();
-            answerButtons = new List<Button>(buttonsContainer.GetComponentsInChildren<Button>());
-            if (wordColours.Count < answerButtons.Count)
-                Debug.LogError("Not enough colour for amount of buttons. Game not started");
-        }
-
-        //Quick function when player gets answers a question
-        void Answer(bool isSuccessful)
-        {
-            RecordResults(isSuccessful);
-            RandomiseGame();
         }
 
         //Randomises game for stroop test
-        public void RandomiseGame(bool isFirstTime = false)
+        public void RandomiseGame()
         {
-            //Igonores when function is used for first time
-            if (isFirstTime)
+            if (currentTest++ != NumberOfTests)
             {
-                ResetsGame();
-            }
-            
-            if (currentTest != NumberOfTests)
-            {
-                List<int> colourSelection = SetColourSelection();
-                List<int> buttonSelection = SetButtonOrder(colourSelection);
-                SetupGameGui(buttonSelection, colourSelection);
-                currentTest++;
+                List<int> colourSelection = isRandomisedButtons ? SetRandomisedColourSelection() : RandomiseIntSelection(numberOfButtons, numberOfButtons);
+                List<int> buttonTaskSelection = isRandomisedButtons ? SetRandomisedButtonTasks() : colourSelection;
+                guiManager.SetupGameGui(buttonTaskSelection, colourSelection);
             }
             else
             {
@@ -74,7 +47,7 @@ namespace Game
         }
 
         //Creates list of random intergers based on number range from zero that never repeat
-        List<int> RandomIntSelection(int size, int selections)
+        List<int> RandomiseIntSelection(int size, int selections)
         {
             List<int> selectableInts = new List<int>();
             List<int> selectedInts = new List<int>();
@@ -94,18 +67,15 @@ namespace Game
         }
 
         //Records results of each test into a list
-        void RecordResults(bool isSuccessful)
+        public void RecordSuccess()
         {
-            if(isSuccessful)
-            {
-                testResults.successes++;
-            }
+            testResults.successes++;
         }
 
         //Toggle event for when toggle for random is changed
-        public void SetRandom(bool isSetRandom)
+        public void SetRandom(bool isRandom)
         {
-            isRandom = isSetRandom;
+            isRandomisedButtons = isRandom;
         }
 
         //Input text event for when number of tests change
@@ -115,14 +85,12 @@ namespace Game
         }
 
         //Resets values, clear events on buttons and restarts start time
-        void ResetsGame()
+        public void ResetGame()
         {
             startTime = Time.time;
             testResults.testTime = 0;
             testResults.successes = 0;
             currentTest = 0;
-            foreach (Button button in answerButtons)
-                button.onClick.RemoveAllListeners();
         }
 
         //Ends game by saving final time and displays results
@@ -133,62 +101,15 @@ namespace Game
         }
 
         //Sets colour selection based on being random or standard
-        List<int> SetColourSelection()
+        List<int> SetRandomisedColourSelection()
         {
-            if (isRandom)
-            {
-                return RandomIntSelection(wordColours.Count, 4);
-            }
-            else
-            {
-                return RandomIntSelection(4, 4);
-            }
+            return RandomiseIntSelection(wordColours.Count, numberOfButtons);
         }
 
         //Sets button orders based on being random or standard
-        List<int> SetButtonOrder(List<int> matchSelection)
+        List<int> SetRandomisedButtonTasks()
         {
-            if (isRandom)
-            {
-                return RandomIntSelection(answerButtons.Count, 4);
-            }
-            else
-            {
-                return matchSelection;
-            }
-        }
-
-        //Sets up GUI for game with listeners and correct displayed data
-        void SetupGameGui(List<int> buttonOrder, List<int> selectedColours)
-        {
-            foreach (Button button in answerButtons)
-                button.onClick.RemoveAllListeners();
-
-            //Loops through lists of random selection to set up buttons and display
-            for (int i = 0; i < answerButtons.Count; i++)
-            {
-                int selectedButton = buttonOrder[i];
-                int selectedColour = selectedColours[i];
-
-                //Sets up the settings buttons and display from first indexed data from lists
-                if (i == 0)
-                {
-                    answerButtons[selectedButton].onClick.AddListener(() => Answer(true));
-                    answerButtons[selectedButton].GetComponentInChildren<TextMeshProUGUI>().text = wordColours[selectedColour].word;
-                    displayText.color = wordColours[selectedColour].colour;
-                }
-                //Sets up everything else using indexed data
-                else
-                {
-                    //Sets up display with second index data from list
-                    if (i == 1)
-                        displayText.text = wordColours[selectedColour].word;
-                    answerButtons[selectedButton].onClick.AddListener(() => Answer(false));
-                    answerButtons[selectedButton].GetComponentInChildren<TextMeshProUGUI>().text = wordColours[selectedColour].word;
-                }
-            }
+            return RandomiseIntSelection(numberOfButtons, numberOfButtons);
         }
     }
-
-
 }

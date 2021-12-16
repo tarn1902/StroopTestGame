@@ -19,6 +19,12 @@ namespace Gui
         [SerializeField]
         private GameObject optionsDisplay = null;
 
+        [Header("Game GUI References")]
+        [SerializeField]
+        private TextMeshProUGUI displayText = null;
+        [SerializeField]
+        private GameObject buttonsContainer = null;
+
         [Header("Option References")]
         [SerializeField]
         private TextMeshProUGUI resultsText = null;
@@ -28,12 +34,18 @@ namespace Gui
         private TMP_InputField NumberOfTestsInput = null;
 
         private Game.GameManager gameManager = null;
+        private Audio.AudioManager audioManager = null;
+
         private GameObject currentDisplay = null;
+        private List<Button> answerButtons = null;
 
         //Turns off all displays to make sure no other gui is on and sets default to start menu to turn on
         private void Start()
         {
             gameManager = GetComponent<Game.GameManager>();
+            audioManager = GetComponent<Audio.AudioManager>();
+            answerButtons = new List<Button>(buttonsContainer.GetComponentsInChildren<Button>());
+
             currentDisplay = startDisplay;
 
             resultsDisplay.SetActive(false);
@@ -63,7 +75,8 @@ namespace Gui
         public void DisplayGame()
         {
             ChangeDisplay(gameDisplay);
-            gameManager.RandomiseGame(true);
+            gameManager.ResetGame();
+            gameManager.RandomiseGame();
         }
 
         //Displays option gui and sets it all match current settings
@@ -85,8 +98,26 @@ namespace Gui
         //Matches options with game manager values
         void MatchCurrentOptions()
         {
-            randomToggle.isOn = gameManager.IsRandom;
+            randomToggle.isOn = gameManager.IsRandomisedButtons;
             NumberOfTestsInput.text = gameManager.NumberOfTests.ToString();
+        }
+
+        //Sets up GUI for game with listeners and correct displayed data
+        public void SetupGameGui(List<int> colourButtonPositioning, List<int> selectedColours)
+        {
+            displayText.color = gameManager.WordColour[selectedColours[0]].colour;
+            displayText.text = gameManager.WordColour[selectedColours[1]].word;
+
+            //Loops through lists of random selection to set up buttons and display
+            for (int i = 0; i < answerButtons.Count; i++)
+            {
+                int currentButtonPosition = colourButtonPositioning[i];
+                int selectedColour = selectedColours[i];
+                answerButtons[currentButtonPosition].onClick.RemoveListener(gameManager.RecordSuccess);
+                if (i == 0) answerButtons[currentButtonPosition].onClick.AddListener(gameManager.RecordSuccess);
+                else answerButtons[currentButtonPosition].onClick.RemoveListener(gameManager.RecordSuccess);
+                answerButtons[currentButtonPosition].GetComponentInChildren<TextMeshProUGUI>().text = gameManager.WordColour[selectedColour].word;   
+            }
         }
     }
 }

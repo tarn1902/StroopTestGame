@@ -24,6 +24,8 @@ namespace Gui
         private TextMeshProUGUI displayText = null;
         [SerializeField]
         private GameObject buttonsContainer = null;
+        [SerializeField]
+        private GameObject answerButtonPrefab = null;
 
         [Header("Option References")]
         [SerializeField]
@@ -31,28 +33,26 @@ namespace Gui
         [SerializeField]
         private Toggle randomToggle = null;
         [SerializeField]
-        private TMP_InputField NumberOfTestsInput = null;
+        private TMP_InputField numberOfTestsInput = null;
+        [SerializeField]
+        private TMP_InputField numberOfButtonsInput = null;
 
         private Game.GameManager gameManager = null;
         private Audio.AudioManager audioManager = null;
-
         private GameObject currentDisplay = null;
-        private List<Button> answerButtons = null;
+        private List<Button> answerButtons = new List<Button>();
+
 
         //Turns off all displays to make sure no other gui is on and sets default to start menu to turn on
         private void Start()
         {
             gameManager = GetComponent<Game.GameManager>();
             audioManager = GetComponent<Audio.AudioManager>();
-            answerButtons = new List<Button>(buttonsContainer.GetComponentsInChildren<Button>());
-
             currentDisplay = startDisplay;
-
             resultsDisplay.SetActive(false);
             startDisplay.SetActive(false);
             gameDisplay.SetActive(false);
             optionsDisplay.SetActive(false);
-
             currentDisplay.SetActive(true);
         }
 
@@ -74,6 +74,7 @@ namespace Gui
         //Displays game display and randomises first game
         public void DisplayGame()
         {
+            SetupGameGUIButtons();
             ChangeDisplay(gameDisplay);
             gameManager.ResetGame();
             gameManager.RandomiseGame();
@@ -84,7 +85,6 @@ namespace Gui
         {
             ChangeDisplay(optionsDisplay);
             MatchCurrentOptions();
-
         }
 
         //Quick turn on and off displays function
@@ -99,7 +99,8 @@ namespace Gui
         void MatchCurrentOptions()
         {
             randomToggle.isOn = gameManager.IsRandomisedButtons;
-            NumberOfTestsInput.text = gameManager.NumberOfTests.ToString();
+            numberOfTestsInput.text = gameManager.NumberOfTests.ToString();
+            numberOfButtonsInput.text = gameManager.NumberOfButton.ToString();
         }
 
         //Sets up GUI for game with listeners and correct displayed data
@@ -109,7 +110,7 @@ namespace Gui
             displayText.text = gameManager.WordColour[selectedColours[1]].word;
 
             //Loops through lists of random selection to set up buttons and display
-            for (int i = 0; i < answerButtons.Count; i++)
+            for (int i = 0; i < gameManager.NumberOfButton; i++)
             {
                 int currentButtonPosition = colourButtonPositioning[i];
                 int selectedColour = selectedColours[i];
@@ -117,6 +118,29 @@ namespace Gui
                 if (i == 0) answerButtons[currentButtonPosition].onClick.AddListener(gameManager.RecordSuccess);
                 else answerButtons[currentButtonPosition].onClick.RemoveListener(gameManager.RecordSuccess);
                 answerButtons[currentButtonPosition].GetComponentInChildren<TextMeshProUGUI>().text = gameManager.WordColour[selectedColour].word;   
+            }
+        }
+
+        //Dynamically set up buttons for game display
+        void SetupGameGUIButtons()
+        {
+            while (buttonsContainer.transform.childCount < gameManager.NumberOfButton)
+            {
+                Button button = Instantiate(answerButtonPrefab, buttonsContainer.transform, true).GetComponent<Button>();
+                button.onClick.AddListener(audioManager.PlayClickSound);
+                button.onClick.AddListener(gameManager.RandomiseGame);
+                answerButtons.Add(button.GetComponent<Button>());
+            }
+            for (int i = 0; i < buttonsContainer.transform.childCount; i++)
+            {
+                if (i <= gameManager.NumberOfButton)
+                {
+                    buttonsContainer.transform.GetChild(i).gameObject.SetActive(true);
+                }
+                else
+                {
+                    buttonsContainer.transform.GetChild(i).gameObject.SetActive(false);
+                }
             }
         }
     }

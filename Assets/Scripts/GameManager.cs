@@ -18,12 +18,15 @@ namespace Game
         public bool IsRandomisedButtons { get { return isRandomisedButtons; } set { isRandomisedButtons = value; } }
         [SerializeField]
         private bool isRandomisedButtons = false;
+        public int NumberOfButton { get { return numberOfButtons; } set { numberOfButtons = Mathf.Clamp(value, 4, 8); } }
+        [SerializeField]
+        [Range(4,8)]
+        private int numberOfButtons = 4;
 
         private Gui.GuiManager guiManager = null;
         private Results testResults = new Results();
         private int currentTest = 0;
         private float startTime = 0f;
-        private const int numberOfButtons = 4;
 
         //Sets up local data and shows warning if issue
         void Start()
@@ -34,11 +37,12 @@ namespace Game
         //Randomises game for stroop test
         public void RandomiseGame()
         {
-            if (currentTest++ != NumberOfTests)
+            if (currentTest++ <= NumberOfTests)
             {
                 List<int> colourSelection = isRandomisedButtons ? SetRandomisedColourSelection() : RandomiseIntSelection(numberOfButtons, numberOfButtons);
                 List<int> buttonTaskSelection = isRandomisedButtons ? SetRandomisedButtonTasks() : colourSelection;
                 guiManager.SetupGameGui(buttonTaskSelection, colourSelection);
+                
             }
             else
             {
@@ -78,10 +82,16 @@ namespace Game
             isRandomisedButtons = isRandom;
         }
 
-        //Input text event for when number of tests change
+        //Input text event for when number of tests changes
         public void SetNumberOfTest(string textfield)
         {
             NumberOfTests = System.Int32.Parse(textfield);
+        }
+
+        //Input text event for when number of buttons changes
+        public void SetNumberOfButtons(string textfield)
+        {
+            numberOfButtons = System.Int32.Parse(textfield);
         }
 
         //Resets values, clear events on buttons and restarts start time

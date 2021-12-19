@@ -26,6 +26,8 @@ namespace Gui
         private GameObject buttonsContainer = null;
         [SerializeField]
         private GameObject answerButtonPrefab = null;
+        [SerializeField]
+        private TextMeshProUGUI testNumberText = null;
 
         [Header("Option References")]
         [SerializeField]
@@ -50,10 +52,9 @@ namespace Gui
             audioManager = GetComponent<Audio.AudioManager>();
             currentDisplay = startDisplay;
             resultsDisplay.SetActive(false);
-            startDisplay.SetActive(false);
             gameDisplay.SetActive(false);
             optionsDisplay.SetActive(false);
-            currentDisplay.SetActive(true);
+            DisplayStartMenu();
         }
 
         //The results made by the game will be displayed in results display as a text
@@ -63,12 +64,14 @@ namespace Gui
             string resultsToText = "";
             resultsToText += results.successes + "/" + gameManager.NumberOfTests + " in " + results.testTime + " seconds\n";
             resultsText.text = resultsToText;
+            audioManager.PlayMenuMusic();
         }
 
         //Displays start menu display
         public void DisplayStartMenu()
         {
             ChangeDisplay(startDisplay);
+            audioManager.PlayMenuMusic();
         }
 
         //Displays game display and randomises first game
@@ -78,6 +81,7 @@ namespace Gui
             ChangeDisplay(gameDisplay);
             gameManager.ResetGame();
             gameManager.RandomiseGame();
+            audioManager.PlayGameMusic();
         }
 
         //Displays option gui and sets it all match current settings
@@ -142,6 +146,11 @@ namespace Gui
                     buttonsContainer.transform.GetChild(i).gameObject.SetActive(false);
                 }
             }
+        }
+        //Sets game text to display test number
+        public void SetGameTestNumber(int testNum)
+        {
+            testNumberText.text = testNum.ToString();
         }
     }
 }

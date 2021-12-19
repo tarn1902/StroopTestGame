@@ -25,7 +25,7 @@ namespace Game
 
         private Gui.GuiManager guiManager = null;
         private Results testResults = new Results();
-        private int currentTest = 0;
+        private int currentTestNumber = 0;
         private float startTime = 0f;
 
         //Sets up local data and shows warning if issue
@@ -37,8 +37,9 @@ namespace Game
         //Randomises game for stroop test
         public void RandomiseGame()
         {
-            if (currentTest++ <= NumberOfTests)
+            if (currentTestNumber++ <= NumberOfTests)
             {
+                guiManager.SetGameTestNumber(currentTestNumber);
                 List<int> colourSelection = isRandomisedButtons ? SetRandomisedColourSelection() : RandomiseIntSelection(numberOfButtons, numberOfButtons);
                 List<int> buttonTaskSelection = isRandomisedButtons ? SetRandomisedButtonTasks() : colourSelection;
                 guiManager.SetupGameGui(buttonTaskSelection, colourSelection);
@@ -100,7 +101,7 @@ namespace Game
             startTime = Time.time;
             testResults.testTime = 0;
             testResults.successes = 0;
-            currentTest = 0;
+            currentTestNumber = 0;
         }
 
         //Ends game by saving final time and displays results
@@ -120,6 +121,12 @@ namespace Game
         List<int> SetRandomisedButtonTasks()
         {
             return RandomiseIntSelection(numberOfButtons, numberOfButtons);
+        }
+
+        //Quits application
+        public void QuitGame()
+        {
+            Application.Quit();
         }
     }
 }

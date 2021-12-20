@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using Structs;
 namespace Game
@@ -37,18 +38,17 @@ namespace Game
         //Randomises game for stroop test
         public void RandomiseGame()
         {
-            if (currentTestNumber++ <= NumberOfTests)
+            if (++currentTestNumber > NumberOfTests)
             {
-                guiManager.SetGameTestNumber(currentTestNumber);
-                List<int> colourSelection = isRandomisedButtons ? SetRandomisedColourSelection() : RandomiseIntSelection(numberOfButtons, numberOfButtons);
-                List<int> buttonTaskSelection = isRandomisedButtons ? SetRandomisedButtonTasks() : colourSelection;
-                guiManager.SetupGameGui(buttonTaskSelection, colourSelection);
-                
+                testResults.testTime = Time.time - startTime;
+                StartCoroutine(DelayResultTillEndOfFrame());
+                return;
             }
-            else
-            {
-                EndGame();
-            }
+
+            List<int> colourSelection = isRandomisedButtons ? SetRandomisedColourSelection() : RandomiseIntSelection(numberOfButtons, numberOfButtons);
+            List<int> buttonTaskSelection = isRandomisedButtons ? SetRandomisedButtonTasks() : colourSelection;
+            guiManager.SetupGameGui(buttonTaskSelection, colourSelection);
+            guiManager.SetGameTestNumber(currentTestNumber);
         }
 
         //Creates list of random intergers based on number range from zero that never repeat
@@ -104,13 +104,6 @@ namespace Game
             currentTestNumber = 0;
         }
 
-        //Ends game by saving final time and displays results
-        void EndGame()
-        {
-            testResults.testTime = Time.time - startTime;
-            guiManager.DisplayResults(testResults);
-        }
-
         //Sets colour selection based on being random or standard
         List<int> SetRandomisedColourSelection()
         {
@@ -127,6 +120,13 @@ namespace Game
         public void QuitGame()
         {
             Application.Quit();
+        }
+
+        //Delays Displaying results till final event is sent
+        private IEnumerator DelayResultTillEndOfFrame()
+        {
+            yield return new WaitForEndOfFrame();
+            guiManager.DisplayResults(testResults);
         }
     }
 }

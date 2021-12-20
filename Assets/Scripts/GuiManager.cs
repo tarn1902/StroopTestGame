@@ -120,7 +120,6 @@ namespace Gui
                 int selectedColour = selectedColours[i];
                 answerButtons[currentButtonPosition].onClick.RemoveListener(gameManager.RecordSuccess);
                 if (i == 0) answerButtons[currentButtonPosition].onClick.AddListener(gameManager.RecordSuccess);
-                else answerButtons[currentButtonPosition].onClick.RemoveListener(gameManager.RecordSuccess);
                 answerButtons[currentButtonPosition].GetComponentInChildren<TextMeshProUGUI>().text = gameManager.WordColour[selectedColour].word;   
             }
         }

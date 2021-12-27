@@ -15,12 +15,14 @@ namespace Audio
         [SerializeField]
         private AudioClip gameMusic = null;
 
-        //Used for buttons to make click sound
-        public void PlayClickSound()
-        {
-            source.PlayOneShot(buttonClickSound);
-        }
 
+        public bool MuteGameAudio { get { return muteGameAudio; } set { muteGameAudio = value; } }
+        private bool muteGameAudio = false;
+
+        private void Start()
+        {
+            PlayMenuMusic();
+        }
         //Plays music when in menu
         public void PlayMenuMusic()
         {
@@ -34,11 +36,22 @@ namespace Audio
         //Plays music when in game
         public void PlayGameMusic()
         {
-            if (!source.isPlaying || source.clip != gameMusic)
+            if (!MuteGameAudio && (!source.isPlaying || source.clip != gameMusic))
             {
                 source.clip = gameMusic;
                 source.Play();
             }
+            else
+            {
+                source.Stop();
+            }
+        }
+
+        //***Button Events***
+        //Used for buttons to make click sound
+        public void PlayClickSound()
+        {
+            source.PlayOneShot(buttonClickSound);
         }
     }
 }

@@ -19,7 +19,7 @@ namespace Game
         public bool IsRandomisedButtons { get { return isRandomisedButtons; } set { isRandomisedButtons = value; } }
         [SerializeField]
         private bool isRandomisedButtons = false;
-        public int NumberOfButton { get { return numberOfButtons; } set { numberOfButtons = Mathf.Clamp(value, 4, 8); } }
+        public int NumberOfButtons { get { return numberOfButtons; } set { numberOfButtons = Mathf.Clamp(value, 4, 8); } }
         [SerializeField]
         [Range(4,8)]
         private int numberOfButtons = 4;
@@ -33,22 +33,6 @@ namespace Game
         void Start()
         {
             guiManager = GetComponent<Gui.GuiManager>();
-        }
-
-        //Randomises game for stroop test
-        public void RandomiseGame()
-        {
-            if (++currentTestNumber > NumberOfTests)
-            {
-                testResults.testTime = Time.time - startTime;
-                StartCoroutine(DelayResultTillEndOfFrame());
-                return;
-            }
-
-            List<int> colourSelection = isRandomisedButtons ? SetRandomisedColourSelection() : RandomiseIntSelection(numberOfButtons, numberOfButtons);
-            List<int> buttonTaskSelection = isRandomisedButtons ? SetRandomisedButtonTasks() : colourSelection;
-            guiManager.SetupGameGui(buttonTaskSelection, colourSelection);
-            guiManager.SetGameTestNumber(currentTestNumber);
         }
 
         //Creates list of random intergers based on number range from zero that never repeat
@@ -71,39 +55,6 @@ namespace Game
             return selectedInts;
         }
 
-        //Records results of each test into a list
-        public void RecordSuccess()
-        {
-            testResults.successes++;
-        }
-
-        //Toggle event for when toggle for random is changed
-        public void SetRandom(bool isRandom)
-        {
-            isRandomisedButtons = isRandom;
-        }
-
-        //Input text event for when number of tests changes
-        public void SetNumberOfTest(string textfield)
-        {
-            NumberOfTests = System.Int32.Parse(textfield);
-        }
-
-        //Input text event for when number of buttons changes
-        public void SetNumberOfButtons(string textfield)
-        {
-            numberOfButtons = System.Int32.Parse(textfield);
-        }
-
-        //Resets values, clear events on buttons and restarts start time
-        public void ResetGame()
-        {
-            startTime = Time.time;
-            testResults.testTime = 0;
-            testResults.successes = 0;
-            currentTestNumber = 0;
-        }
-
         //Sets colour selection based on being random or standard
         List<int> SetRandomisedColourSelection()
         {
@@ -116,17 +67,67 @@ namespace Game
             return RandomiseIntSelection(numberOfButtons, numberOfButtons);
         }
 
+        //Delays Displaying results till final event is sent
+        private IEnumerator DelayResultTillEndOfFrame()
+        {
+            yield return new WaitForEndOfFrame();
+            guiManager.DisplayResults(testResults);
+        }
+
+        //Resets values, clear events on buttons and restarts start time
+        public void ResetGame()
+        {
+            startTime = Time.time;
+            testResults.testTime = 0;
+            testResults.successes = 0;
+            currentTestNumber = 0;
+            RandomiseGame();
+        }
+
+        //Records results of each test into a list
+        public void RecordSuccess()
+        {
+            testResults.successes++;
+        }
+
+        //Randomises game for stroop test
+        public void RandomiseGame()
+        {
+            if (++currentTestNumber > NumberOfTests)
+            {
+                testResults.testTime = Time.time - startTime;
+                StartCoroutine(DelayResultTillEndOfFrame());
+                return;
+            }
+            List<int> colourSelection = isRandomisedButtons ? SetRandomisedColourSelection() : RandomiseIntSelection(numberOfButtons, numberOfButtons);
+            List<int> buttonTaskSelection = isRandomisedButtons ? SetRandomisedButtonTasks() : colourSelection;
+            guiManager.SetupGameGui(buttonTaskSelection, colourSelection);
+            guiManager.SetGameTestNumber(currentTestNumber);
+        }
+
+        //***Button Events***
         //Quits application
         public void QuitGame()
         {
             Application.Quit();
         }
 
-        //Delays Displaying results till final event is sent
-        private IEnumerator DelayResultTillEndOfFrame()
+        //Input text event for when number of buttons changes
+        public void SetNumberOfButtons(string textfield)
         {
-            yield return new WaitForEndOfFrame();
-            guiManager.DisplayResults(testResults);
+            NumberOfButtons = System.Int32.Parse(textfield);
+        }
+
+        //Input text event for when number of tests changes
+        public void SetNumberOfTest(string textfield)
+        {
+            NumberOfTests = System.Int32.Parse(textfield);
+        }
+
+        //Toggle event for when toggle for random is changed
+        public void SetRandom(bool isRandom)
+        {
+            isRandomisedButtons = isRandom;
         }
     }
 }

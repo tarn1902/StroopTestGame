@@ -1,9 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-
 namespace Audio
 {
+    /*
+     * This class manages how audio is used within scene
+     * Tarn Cooper
+     */
     public class AudioManager : MonoBehaviour
     {
         [SerializeField]
@@ -15,14 +16,15 @@ namespace Audio
         [SerializeField]
         private AudioClip gameMusic = null;
 
-
         public bool MuteGameAudio { get { return muteGameAudio; } set { muteGameAudio = value; } }
         private bool muteGameAudio = false;
 
+        //Plays menu music on starting application
         private void Start()
         {
             PlayMenuMusic();
         }
+
         //Plays music when in menu
         public void PlayMenuMusic()
         {

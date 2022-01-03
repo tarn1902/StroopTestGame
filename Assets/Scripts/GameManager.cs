@@ -4,7 +4,10 @@ using UnityEngine;
 using Structs;
 namespace Game
 {
-    //Manages the Stroop test gameplay with a basic reset
+    /*
+     * This class manages how the game is used within scene
+     * Tarn Cooper
+     */
     public class GameManager : MonoBehaviour
     {
         public List<WordColour> WordColour { get { return wordColours; } set { wordColours = value; } }

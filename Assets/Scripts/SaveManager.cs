@@ -4,6 +4,10 @@ using UnityEngine;
 
 namespace Save
 {
+    /*
+     * This class manages how saving of data is handled
+     * Tarn Cooper
+     */
     public class SaveManager : MonoBehaviour
     {
         //Saves local highscore to playerprefs

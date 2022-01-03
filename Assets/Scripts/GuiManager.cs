@@ -7,6 +7,10 @@ using UnityEngine.UI;
 
 namespace Gui
 {
+    /*
+     * This class manages how gui is used within scene
+     * Tarn Cooper
+     */
     public class GuiManager : MonoBehaviour
     {
         [Header("Display References")]
